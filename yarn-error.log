@@ -1,0 +1,79 @@
+Arguments: 
+  /home/roro/.nvm/versions/node/v16.16.0/bin/node /usr/local/bin/yarn
+
+PATH: 
+  /home/roro/.nvm/versions/node/v16.16.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin:/snap/bin:/home/roro/Documents/Projetsplateforme/Android/Sdk/emulator:/home/roro/Documents/Projetsplateforme/Android/Sdk/platform-tools
+
+Yarn version: 
+  1.22.19
+
+Node version: 
+  16.16.0
+
+Platform: 
+  linux x64
+
+Trace: 
+  SyntaxError: /home/roro/.cache/yarn/v6/npm-source-map-0.5.7-8a039d2d1021d22d1ea14c80d8ea468ba2ef3fcc-integrity/node_modules/source-map/.yarn-metadata.json: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:1629:59
+      at Generator.next (<anonymous>)
+      at step (/usr/local/lib/node_modules/yarn/lib/cli.js:310:30)
+      at /usr/local/lib/node_modules/yarn/lib/cli.js:321:13
+
+npm manifest: 
+  {
+    "name": "neko",
+    "version": "1.0.0",
+    "main": "node_modules/expo/AppEntry.js",
+    "scripts": {
+      "start": "expo start",
+      "android": "expo start --android",
+      "ios": "expo start --ios",
+      "web": "expo start --web"
+    },
+    "dependencies": {
+      "@expo/vector-icons": "^13.0.0",
+      "@react-native-async-storage/async-storage": "^1.17.11",
+      "@react-native-community/masked-view": "^0.1.11",
+      "@react-native-masked-view/masked-view": "^0.2.8",
+      "@react-navigation/bottom-tabs": "^6.5.3",
+      "@react-navigation/material-top-tabs": "^6.5.2",
+      "@react-navigation/native": "^6.1.1",
+      "@react-navigation/native-stack": "^6.9.8",
+      "@rneui/base": "github:react-native-elements/react-native-elements#base",
+      "@rneui/themed": "github:react-native-elements/react-native-elements#themed",
+      "axios": "^1.2.3",
+      "expo": "^1.0.0",
+      "expo-secure-store": "^12.0.0",
+      "expo-status-bar": "~1.4.2",
+      "react": "18.1.0",
+      "react-native": "0.70.5",
+      "react-native-action-button": "^2.8.5",
+      "react-native-elements": "^3.4.3",
+      "react-native-floating-action": "^1.22.0",
+      "react-native-gesture-handler": "~2.8.0",
+      "react-native-gifted-chat": "^1.1.1",
+      "react-native-ionicons": "^4.6.5",
+      "react-native-pager-view": "6.0.1",
+      "react-native-safe-area-context": "4.4.1",
+      "react-native-screens": "~3.18.0",
+      "react-native-tab-view": "^3.3.4",
+      "react-native-vector-icons": "^9.2.0",
+      "react-navigation": "^4.4.4",
+      "react-navigation-stack": "^2.10.4",
+      "socket.io": "^4.6.0",
+      "socket.io-client": "^4.6.0",
+      "yet": "^0.1.0"
+    },
+    "devDependencies": {
+      "@babel/core": "^7.12.9"
+    },
+    "private": true
+  }
+
+yarn manifest: 
+  No manifest
+
+Lockfile: 
+  No lockfile
