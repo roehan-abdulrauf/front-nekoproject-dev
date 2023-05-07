@@ -4,6 +4,9 @@ import { updatePasswordUser } from '../components/utile/updatePasswordUser.js';
 import { updatePseudoUser } from '../components/utile/updatePseudoUser.js';
 import { updateMailUser } from '../components/utile/updateMailUser.js';
 import { updateBioUser } from '../components/utile/updateBioUser.js';
+import { updatePhotoUser } from '../components/updatePhotoUser.js';
+import ImageEditor from '@react-native-community/image-editor';
+import ImagePicker from 'react-native-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useAuth } from '../components/utile/AuthContext';
 import { Logout } from '../components/utile/Logout.js';
@@ -53,18 +56,40 @@ const ProfilScreen = ({ navigation }) => {
   const validRegexEmail = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
   const validRegexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
 
-  const pickImage = async () => {
-    // No permissions request is necessary for launching the image library
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
+  // const pickImage = async () => {
+  //   // No permissions request is necessary for launching the image library
+  //   let result = await ImagePicker.launchImageLibraryAsync({
+  //     mediaTypes: ImagePicker.MediaTypeOptions.All,
+  //     allowsEditing: true,
+  //     aspect: [4, 3],
+  //     quality: 1,
+  //   });
+  //   if (!result.canceled) {
+  //     setImage(result.assets[0].uri);
+  //   }
+  // };
+
+  const selectImage = () => {
+    ImagePicker.showImagePicker({}, (response) => {
+      if (response.uri) {
+        const { width, height } = response;
+        const cropData = {
+          offset: { x: 0, y: 0 },
+          size: { width, height },
+          displaySize: { width: 300, height: 300 },
+        };
+        ImageEditor.cropImage(response.uri, cropData, (croppedImageURI) => {
+          ImageEditor.resizeImage(croppedImageURI, { width: 300, height: 300 }, (resizedImageURI) => {
+            setPhoto({ uri: resizedImageURI, type: 'image/jpeg', name: 'photo.jpg' });
+          }, (error) => {
+            console.log(error);
+          });
+        }, (error) => {
+          console.log(error);
+        });
+      }
     });
-    if (!result.canceled) {
-      setImage(result.assets[0].uri);
-    }
-  };
+  }
 
   const updateUser = () => {
 
@@ -139,6 +164,10 @@ const ProfilScreen = ({ navigation }) => {
         <View style={styles.formContainer}>
           <Text style={styles.screenName}>Mon Profil</Text>
           <Image source={require("../assets/icons8-saitama-250.png")} style={styles.profileImg} />
+          {photo && <Image source={{ uri: photo.uri }} style={{ width: 150, height: 150, borderRadius: 75 }} />}
+          <TouchableOpacity onPress={selectImage}>
+            <Text>Modifier la photo de profil</Text>
+          </TouchableOpacity>
           <Text>Votre pseudo :</Text>
           <TextInput
             style={styles.input}

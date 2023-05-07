@@ -1,20 +1,40 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, SafeAreaView, StatusBar, Alert } from 'react-native';
 import axios, { isCancel, AxiosError } from 'axios';
+import randomstring from 'randomstring';
+import { AntDesign } from '@expo/vector-icons';
+import IP_ADRESS from '../components/utile/env';
 
 const backImage = require("../images/fond.png")
 const SignUp = ({ navigation }) => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [validatePassword, setValidatePassword] = useState('');
+  const [showvalidatePassword, setShowvalidatePassword] = useState(false);
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
+  const toggleShowvalidatePassword = () => {
+    setShowvalidatePassword(!showvalidatePassword);
+  };
 
 
   const goToLogin = () => {
     setErrorMessage('');
     navigation.navigate('Login');
   }
+
+  const verificationCode = randomstring.generate({
+    length: 6,
+    charset: 'alphanumeric',
+    capitalization: 'uppercase',
+    special: true,
+    numeric: true
+  });
 
   const register = () => {
     if (!username || !email || !password) {
@@ -59,13 +79,20 @@ const SignUp = ({ navigation }) => {
                       mail: email,
                       password: password,
                     })
-                    .then((response) => {
-                      navigation.navigate('Login')
-                    })
-                    .catch((error) => {
-                      console.log(error.response.status);
-                      setErrorMessage(error.response.data.message);
-                    });
+                      .then((response) => {
+                        const postMail = axios.post(`http://${IP_ADRESS}:5000/api/mail`, {
+                          pseudo: username,
+                          email: email,
+                          verificationCode: verificationCode,
+                        });
+                        if (postMail.status = 200) {
+                          navigation.navigate('Login')
+                        }
+                      })
+                      .catch((error) => {
+                        console.log(error.response.status);
+                        setErrorMessage(error.response.data.message);
+                      });
                   },
                 },
               ],
@@ -96,8 +123,8 @@ const SignUp = ({ navigation }) => {
               {errorMessage}
             </Text>
           </View>
-        ) : 
-        <View>
+        ) :
+          <View>
             <Text style={[styles.title, styles.titleMarginTop2]}>S'inscrire</Text>
           </View>
         }
@@ -113,27 +140,35 @@ const SignUp = ({ navigation }) => {
           placeholder="Entrez votre Email"
           autoCapitalize='none'
           keyboardType="email-address"
-          textContentType='emailAdress'
+          textContentType='emailAddress'
           value={email}
           onChangeText={(text) => setEmail(text)} />
-        <TextInput
-          style={styles.input}
-          placeholder="Entrez votre Password"
-          autoCapitalize='none'
-          textContentType="password"
-          autoCorrect={false}
-          secureTextEntry={true}
-          value={password}
-          onChangeText={(text) => setPassword(text)} />
-        <TextInput
-          style={styles.input}
-          placeholder="Confirmer votre Password"
-          autoCapitalize='none'
-          textContentType="password"
-          autoCorrect={false}
-          secureTextEntry={true}
-          value={validatePassword}
-          onChangeText={(text) => setValidatePassword(text)} />
+        <View style={styles.inputPassword}>
+          <TextInput
+            style={styles.input}
+            placeholder="Entrez votre Password"
+            autoCapitalize='none'
+            textContentType="password"
+            autoCorrect={false}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={(text) => setPassword(text)} />
+          <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword}>
+            <AntDesign style={styles.showPasswordButtonDesign} name={showPassword ? 'eyeo' : 'eye'} size={24} color="black" />
+          </TouchableOpacity></View>
+        <View style={styles.inputPassword}>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmer votre Password"
+            autoCapitalize='none'
+            textContentType="password"
+            autoCorrect={false}
+            secureTextEntry={!showvalidatePassword}
+            value={validatePassword}
+            onChangeText={(text) => setValidatePassword(text)} />
+          <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowvalidatePassword}>
+            <AntDesign style={styles.showPasswordButtonDesign} name={showvalidatePassword ? 'eyeo' : 'eye'} size={24} color="black" />
+          </TouchableOpacity></View>
         <TouchableOpacity style={styles.button} onPress={register}>
           <Text style={styles.buttonText}>S'inscrire</Text>
         </TouchableOpacity>
@@ -143,9 +178,6 @@ const SignUp = ({ navigation }) => {
             <Text style={{ color: '#ffc13b', fontWeight: '600', fontSize: 14 }}> Me Connecter</Text>
           </TouchableOpacity>
         </View>
-        <Text style={{ marginTop: 20, color: 'red' }}>
-          {errorMessage}
-        </Text>
       </SafeAreaView>
     </View>
   );
@@ -165,8 +197,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover'
   },
   imageLogo: {
-    fontWeight: 'bold',
-    color: "white",
+    // fontWeight: 'bold',
+    // color: "white",
     alignSelf: "center",
     width: "50%",
     position: "absolute",
@@ -181,10 +213,10 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   titleMarginTop1: {
-    marginTop: 305,
+    marginTop: 205,
   },
   titleMarginTop2: {
-    marginTop: 230,
+    marginTop: 200,
   },
   whiteSheet: {
     width: '100%',
@@ -194,7 +226,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 60,
   },
-
   input: {
     width: 300,
     backgroundColor: '#F5F0E1',
@@ -202,6 +233,18 @@ const styles = StyleSheet.create({
     height: 50,
     padding: 12,
     margin: 10,
+  },
+  inputPassword: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  showPasswordButton: {
+    padding: 5,
+    position: 'absolute',
+    right: 10,
+  },
+  showPasswordButtonDesign: {
+    color: '#FF6E40',
   },
   form: {
     flex: 1,

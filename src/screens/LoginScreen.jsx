@@ -1,11 +1,11 @@
 import React, { useContext, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, SafeAreaView, StatusBar, Alert } from 'react-native';
 import axios, { isCancel, AxiosError } from 'axios';
-import { save, getItem } from '../components/utile/SecureStore';
-import { useNavigation } from '@react-navigation/native';
-import { SafeAreaFrameContext } from 'react-native-safe-area-context';
 import { useAuth } from '../components/utile/AuthContext';
 import IP_ADRESS from '../components/utile/env';
+import { Linking } from 'react-native';
+import queryString from 'query-string';
+import { AntDesign } from '@expo/vector-icons';
 
 const backImage = require("../images/fond.png")
 
@@ -13,6 +13,7 @@ const Login = ({ navigation }) => {
 
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [user, setUser] = useAuth();
 
@@ -21,38 +22,65 @@ const Login = ({ navigation }) => {
     navigation.navigate('Register');
   }
 
-  const seConnecter = () => {
-    
-    
-      if(!username || !password){
-          
-          setErrorMessage('Tous les champs sont obligatoires, veuillez les remplir s\'il vous plait');
-        } else {
-          const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i; // i pour ignorer la casse
-          const isMatchMail = regex.test(username);
-          const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/i;
-          const isMatchPassword = regexPassword.test(password);
-          if(isMatchMail && isMatchPassword){
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
+  };
 
-            axios.post(`http://${IP_ADRESS}:5000/api/users/login`, {
-              mail: username,
-              password: password,
-            })
-            .then( (response) => {
+  // Fonction qui récupère l'URL initiale
+  const getInitialUrl = async () => {
+    // Vérifie si l'application a été ouverte avec une URL
+    const initialUrl = await Linking.getInitialURL();
+
+    // Si une URL a été trouvée, extraire le token de l'URL
+    if (initialUrl) {
+      const { token } = queryString.parseUrl(initialUrl).query;
+      console.log(`Token: ${token}`);
+      if (token != undefined && token != null && token != '') {
+        navigation.navigate('MailValidation');
+      }
+    }
+  }
+
+  // Appeler la fonction pour récupérer l'URL initiale
+  getInitialUrl();
+
+
+  const seConnecter = () => {
+
+    if (!username || !password) {
+
+      setErrorMessage('Tous les champs sont obligatoires, veuillez les remplir s\'il vous plait');
+    } else {
+      const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/i; // i pour ignorer la casse
+      const isMatchMail = regex.test(username);
+      const regexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/i;
+      const isMatchPassword = regexPassword.test(password);
+      if (isMatchMail && isMatchPassword) {
+
+        axios.post(`http://${IP_ADRESS}:5000/api/users/login`, {
+          mail: username,
+          password: password,
+        })
+          .then((response) => {
+            console.log(response);
+            if (response.data.mailVerified = "false") {
               setUser({
                 ...response.data,
                 idToken: response.data.token
               });
               console.log(response);
-            })
-            .catch( (error) => {
-              console.error(error);
-              console.log(error);
-              setErrorMessage(error.response.data.message)
-            });
-          } else{
-            setErrorMessage("Erreur dans vos identifiants");
-          }
+            } else {
+              setErrorMessage("Vous devez vérifier votre adresse mail avant de vous connecter");
+            }
+          })
+          .catch((error) => {
+            console.error(error);
+            console.log(error);
+            setErrorMessage(error.response.data.message)
+          });
+      } else {
+        setErrorMessage("Erreur dans vos identifiants");
+      }
     }
   };
 
@@ -69,8 +97,8 @@ const Login = ({ navigation }) => {
               {errorMessage}
             </Text>
           </View>
-        ) : 
-        <View>
+        ) :
+          <View>
             <Text style={[styles.title, styles.titleMarginTop2]}>Se Connecter</Text>
           </View>
         }
@@ -81,15 +109,20 @@ const Login = ({ navigation }) => {
           keyboardType="default"
           value={username}
           onChangeText={(text) => setUsername(text)} />
-        <TextInput
-          style={styles.input}
-          placeholder="Entrez votre Password"
-          autoCapitalize='none'
-          textContentType="password"
-          autoCorrect={false}
-          secureTextEntry={true}
-          value={password}
-          onChangeText={(text) => setPassword(text)} />
+        <View style={styles.inputPassword}>
+          <TextInput
+            style={styles.input}
+            placeholder="Entrez votre Password"
+            autoCapitalize='none'
+            textContentType="password"
+            autoCorrect={false}
+            secureTextEntry={!showPassword}
+            value={password}
+            onChangeText={(text) => setPassword(text)} />
+          <TouchableOpacity style={styles.showPasswordButton} onPress={toggleShowPassword}>
+            <AntDesign style={styles.showPasswordButtonDesign} name={showPassword ? 'eyeo' : 'eye'} size={24} color="black" />
+          </TouchableOpacity>
+        </View>
         <TouchableOpacity style={styles.button} onPress={() => { seConnecter() }}>
           <Text style={styles.buttonText}>Se connecter</Text>
         </TouchableOpacity>
@@ -118,8 +151,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover'
   },
   imageLogo: {
-    fontWeight: 'bold',
-    color: "white",
+    // fontWeight: 'bold',
+    // color: "white",
     alignSelf: "center",
     width: "50%",
     position: "absolute",
@@ -147,7 +180,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderTopLeftRadius: 60,
   },
-
   input: {
     width: 300,
     backgroundColor: '#F5F0E1',
@@ -155,6 +187,18 @@ const styles = StyleSheet.create({
     height: 50,
     padding: 12,
     margin: 10,
+  },
+  inputPassword: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  showPasswordButton: {
+    padding: 5,
+    position: 'absolute',
+    right: 10,
+  },
+  showPasswordButtonDesign: {
+    color: '#FF6E40',
   },
   form: {
     flex: 1,

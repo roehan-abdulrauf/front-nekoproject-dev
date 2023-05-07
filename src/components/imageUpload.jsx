@@ -7,7 +7,6 @@ import jwt_decode from 'jwt-decode';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-
 export default function UploadImage() {
     const [image, setImage] = useState(null);
     const [modalVisible, setModalVisible] = useState(false);

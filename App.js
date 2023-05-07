@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AuthProvider, { useAuth } from './src/components/utile/AuthContext';
 import AutreProfilScreen from './src/screens/AutreProfilScreen';
+import MailValidation from './src/screens/MailValidationScreen';
 import { NavigationContainer } from '@react-navigation/native';
 import { checkToken } from './src/components/utile/checkToken';
 import MessageScreen from './src/screens/MessageScreen';
@@ -25,7 +26,7 @@ const Navigator = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="Login" component={LoginScreen}></Stack.Screen>
         <Stack.Screen name="Register" component={SignUpScreen}></Stack.Screen>
-
+        <Stack.Screen name="MailValidation" component={MailValidation}></Stack.Screen>
       </Stack.Navigator>
     )
   } else {
