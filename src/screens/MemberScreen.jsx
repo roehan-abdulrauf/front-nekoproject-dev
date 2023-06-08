@@ -5,6 +5,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useAuth } from '../components/utile/AuthContext';
 import { Logout } from '../components/utile/Logout.js';
 import React, { useState, useEffect } from 'react';
+import IP_ADRESS from '../components/utile/env';
 import { Ionicons } from '@expo/vector-icons';
 import axios from 'axios';
 
@@ -12,7 +13,7 @@ const MemberScreen = ({ navigation }) => {
 
     const [profiles, setProfiles] = useState([]);
     const [searchProfile, setSearchProfile] = useState('');
-    // Check Text error
+    // Check Text error 
     const [user, setUser] = useAuth();
 
     const logoutUser = () => {
@@ -87,13 +88,22 @@ const MemberScreen = ({ navigation }) => {
                     </MenuTrigger>
                     <MenuOptions>
                         <TouchableOpacity onPress={() => navigation.navigate('ProfilScreen')}>
-                            <Text style={styles.menuOption}><Icon name="person" size={15} />Mon profil</Text>
+                            <View style={styles.menuOption}>
+                                <Icon name="person" size={15} />
+                                <Text style={styles.menuOptionText}>Mon profil</Text>
+                            </View>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => navigation.navigate('MemberScreen')}>
-                            <Text style={styles.menuOption}><Icon name="group" size={15} />Member</Text>
+                            <View style={styles.menuOption}>
+                                <Icon name="group" size={15} />
+                                <Text style={styles.menuOptionText}>Member</Text>
+                            </View>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={logoutUser}>
-                            <Text style={styles.menuOption}><Icon name="logout" size={15} />Deconnexion</Text>
+                            <View style={styles.menuOption}>
+                                <Icon name="logout" size={15} />
+                                <Text style={styles.menuOptionText}>Deconnexion</Text>
+                            </View>
                         </TouchableOpacity>
                     </MenuOptions>
                 </Menu>
@@ -105,7 +115,7 @@ const MemberScreen = ({ navigation }) => {
                         style={styles.input}
                         value={searchProfile}
                         onChangeText={setSearchProfile}
-                        placeholder="Type your profil here..."
+                        placeholder="Rechercher un profil..."
                     />
                     <TouchableOpacity >
                         <Ionicons name="search" size={24} color="white" />
@@ -181,10 +191,16 @@ const styles = StyleSheet.create({
         height: 20,
     },
     menuOption: {
+        flexDirection: 'row',
+        alignItems: 'center',
         fontSize: 18,
         padding: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#CCCCCC',
+    },
+    menuOptionText: {
+        marginLeft: 10,
+        fontSize: 15, // Espacement entre l'icône et le texte
     },
     container: {
         padding: 10,

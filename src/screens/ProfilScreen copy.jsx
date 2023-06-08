@@ -1,4 +1,4 @@
-import { View, Text, Image, TextInput, FlatList, ScrollView, TouchableOpacity, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, Image, TextInput, TouchableOpacity, StyleSheet, Button, Alert } from 'react-native';
 import { Menu, MenuOptions, MenuTrigger, MenuProvider } from 'react-native-popup-menu';
 import { updatePasswordUser } from '../components/utile/updatePasswordUser.js';
 import { updatePseudoUser } from '../components/utile/updatePseudoUser.js';
@@ -112,7 +112,12 @@ const ProfilScreen = ({ navigation }) => {
   const openImagePickerAsync = async (type) => {
     let pickerResult;
     if (type === 'gallery') {
-      let image = await ImagePicker.launchImageLibraryAsync();
+      let image = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 1,
+      });
       if (!image.cancelled) {
         pickerResult = image;
         setImage(image.assets[0].uri);
@@ -132,11 +137,11 @@ const ProfilScreen = ({ navigation }) => {
         setImage(image.assets[0].uri);
       }
     }
-
+  
     if (!pickerResult) {
       return;
     }
-
+  
     setSelectedImage({ localUri: pickerResult.uri });
   };
 
@@ -221,91 +226,91 @@ const ProfilScreen = ({ navigation }) => {
         </Menu>
       </View>
       <View style={styles.container}>
-        <Text style={styles.screenName}>Mon Profil</Text>
-        <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-          <View>
-            <TouchableOpacity style={styles.imageContainer} onPress={() => openImagePickerAsync('gallery')}>
-              <Image source={require("../assets/icons8-saitama-250.png")} style={styles.profileImg} resizeMode="contain" />
-            </TouchableOpacity>
-            <Button
-              title="Sélectionner une image depuis la galerie"
-              onPress={() => openImagePickerAsync('gallery')}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          {/* {image && <Image source={{ uri: image }} style={{ width: 200, height: 200, }} />}
+          <Button title="changer l'image" onPress={pickImage} /> */}
+        </View>
+        <View style={styles.formContainer}>
+          <Text style={styles.screenName}>Mon Profil</Text>
+          <Image source={require("../assets/icons8-saitama-250.png")} style={styles.profileImg} />
+          <Button
+            title="Sélectionner une image depuis la galerie"
+            onPress={() => openImagePickerAsync('gallery')}
+          />
+          <Button
+            title="Prendre une photo"
+            onPress={() => openImagePickerAsync('camera')}
+          />
+          {selectedImage !== null && (
+            <Image
+              source={{ uri: selectedImage.localUri }}
+              style={{ width: 300, height: 300 }}
             />
-            <Button
-              title="Prendre une photo"
-              onPress={() => openImagePickerAsync('camera')}
-            />
-            {selectedImage !== null && (
-              <Image
-                source={{ uri: selectedImage.localUri }}
-                style={{ width: 300, height: 300 }}
-              />
-            )}
-            <Text>Votre pseudo :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={`${user.pseudo}`}
-              autoCapitalize='none'
-              keyboardType="default"
-              autoFocus={false}
-              value={pseudo}
-              onChangeText={(text) => setPseudo(text)}
-              onChange={text => setPseudo(text)}
-            />
-            <Text>Votre email :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={`${user.email}`}
-              autoCapitalize='none'
-              keyboardType="email-address"
-              textContentType='emailAdress'
-              autoFocus={false}
-              value={email}
-              onChangeText={(text) => setEmail(text)}
-              onChange={text => setEmail(text)}
-            />
-            <Text>Votre bio :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Entrez votre bio"
-              keyboardType="password"
-              textContentType="bio"
-              value={bio}
-              onChange={text => setBio(text)}
-              onChangeText={text => setBio(text)}
-            />
-            <Text>Votre mot de passe :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Entrez votre Password"
-              autoCapitalize='none'
-              textContentType="password"
-              autoCorrect={false}
-              secureTextEntry={true}
-              value={password}
-              onChangeText={(text) => setPassword(text)}
-              onChange={text => setPassword(text)}
-            />
-            <Text>Confirmer votre mot de passe :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Confirmer votre mot de passe"
-              textContentType="password"
-              secureTextEntry={true}
-              value={confirmPassword}
-              onChange={text => setConfirmPassword(text)}
-              onChangeText={text => setConfirmPassword(text)}
-            />
-            <TouchableOpacity style={styles.button} onPress={updateUser}>
-              <Text style={styles.buttonText}>Entregistrer les modifications</Text>
-            </TouchableOpacity>
-            <Text>
-              {message}
-            </Text>
-          </View>
-        </ScrollView>
+          )}
+          <Text>Votre pseudo :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={`${user.pseudo}`}
+            autoCapitalize='none'
+            keyboardType="default"
+            autoFocus={false}
+            value={pseudo}
+            onChangeText={(text) => setPseudo(text)}
+            onChange={text => setPseudo(text)}
+          />
+          <Text>Votre email :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder={`${user.email}`}
+            autoCapitalize='none'
+            keyboardType="email-address"
+            textContentType='emailAdress'
+            autoFocus={false}
+            value={email}
+            onChangeText={(text) => setEmail(text)}
+            onChange={text => setEmail(text)}
+          />
+          <Text>Votre bio :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Entrez votre bio"
+            keyboardType="password"
+            textContentType="bio"
+            value={bio}
+            onChange={text => setBio(text)}
+            onChangeText={text => setBio(text)}
+          />
+          <Text>Votre mot de passe :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Entrez votre Password"
+            autoCapitalize='none'
+            textContentType="password"
+            autoCorrect={false}
+            secureTextEntry={true}
+            value={password}
+            onChangeText={(text) => setPassword(text)}
+            onChange={text => setPassword(text)}
+          />
+          <Text>Confirmer votre mot de passe :</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Confirmer votre mot de passe"
+            textContentType="password"
+            secureTextEntry={true}
+            value={confirmPassword}
+            onChange={text => setConfirmPassword(text)}
+            onChangeText={text => setConfirmPassword(text)}
+          />
+
+          <TouchableOpacity style={styles.button} onPress={updateUser}>
+            <Text style={styles.buttonText}>Entregistrer les modifications</Text>
+          </TouchableOpacity>
+          <Text>
+            {message}
+          </Text>
+        </View>
       </View>
-      {/* </View> */}
     </MenuProvider>
   );
 };
@@ -323,12 +328,6 @@ const styles = StyleSheet.create({
     paddingRight: 16,
     // zIndex: 1,
   },
-  body: {
-    flexGrow: 1,
-    // paddingTop: 10,
-    // paddingBottom: 20, // Hauteur maximale de la partie corps
-    minHeight: 800,
-  },
   menuOptions: {
     zIndex: 1, elevation: 1
   },
@@ -342,6 +341,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     paddingBottom: 10,
+    // marginTop: 70,
   },
   menuIcon: {
     width: 20,
@@ -360,31 +360,41 @@ const styles = StyleSheet.create({
     fontSize: 15, // Espacement entre l'icône et le texte
   },
   container: {
-    padding: 10,
-    backgroundColor: '#fff',
-    marginBottom: 100,
-  },
-  imageContainer: {
     flex: 1,
+    backgroundColor: '#fff',
     alignItems: 'center',
     justifyContent: 'center',
+    zIndex: 0, elevation: 0
+  },
+
+  profileImage: {
+    width: '100%',
+    height: '100%',
+
   },
   profileImg: {
-    width: 100, // Ajustez la largeur souhaitée de l'image
-    height: 100, // Ajustez la hauteur souhaitée de l'image
+    position: "relative", left: 120,
+    width: '25%',
+    height: '15%',
+    margin: 0,
+    borderRadius: 80,
+    marginBottom: 10,
+    marginTop: 10
   },
   formContainer: {
-    // marginBottom: 30,
+    marginBottom: 30,
     width: '90%',
     zIndex: 0, elevation: 0
   },
   input: {
+
     borderBottomWidth: 1,
     borderBottomColor: 'black',
     height: 50,
-    padding: 3,
-    marginBottom: 20,
+    padding: 12,
+    margin: 10,
     border: 0,
+    padding: 0,
     zIndex: 1,
     backgroundColor: 'white',
     borderBottom: '2px solid #eee',

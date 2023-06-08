@@ -22,7 +22,6 @@ const SignUp = ({ navigation }) => {
     setShowvalidatePassword(!showvalidatePassword);
   };
 
-
   const goToLogin = () => {
     setErrorMessage('');
     navigation.navigate('Login');
@@ -30,9 +29,7 @@ const SignUp = ({ navigation }) => {
 
   const verificationCode = randomstring.generate({
     length: 6,
-    charset: 'alphanumeric',
-    capitalization: 'uppercase',
-    special: true,
+    charset: 'numeric',
     numeric: true
   });
 
@@ -78,6 +75,7 @@ const SignUp = ({ navigation }) => {
                       pseudo: username,
                       mail: email,
                       password: password,
+                      mailVerificationCode: verificationCode,
                     })
                       .then((response) => {
                         const postMail = axios.post(`http://${IP_ADRESS}:5000/api/mail`, {
@@ -86,7 +84,7 @@ const SignUp = ({ navigation }) => {
                           verificationCode: verificationCode,
                         });
                         if (postMail.status = 200) {
-                          navigation.navigate('Login')
+                          navigation.navigate('MailValidation', { email, password, verificationCode });
                         }
                       })
                       .catch((error) => {
