@@ -5,6 +5,7 @@ import { useAuth } from '../components/utile/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Logout } from '../components/utile/Logout.js';
 import React, { useState, useEffect } from 'react';
+import IP_ADRESS from '../components/utile/env';
 import Moment from 'moment';
 import axios from 'axios';
 
@@ -115,13 +116,22 @@ const MessageScreen = ({ navigation }) => {
           </MenuTrigger>
           <MenuOptions>
             <TouchableOpacity onPress={() => navigation.navigate('ProfilScreen')}>
-              <Text style={styles.menuOption}><Icon name="person" size={15} />Mon profil</Text>
+              <View style={styles.menuOption}>
+                <Icon name="person" size={15} />
+                <Text style={styles.menuOptionText}>Mon profil</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('MemberScreen')}>
-              <Text style={styles.menuOption}><Icon name="group" size={15} />Member</Text>
+              <View style={styles.menuOption}>
+                <Icon name="group" size={15} />
+                <Text style={styles.menuOptionText}>Member</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={logoutUser}>
-              <Text style={styles.menuOption}><Icon name="logout" size={15} />Deconnexion</Text>
+              <View style={styles.menuOption}>
+                <Icon name="logout" size={15} />
+                <Text style={styles.menuOptionText}>Deconnexion</Text>
+              </View>
             </TouchableOpacity>
           </MenuOptions>
         </Menu>
@@ -203,10 +213,16 @@ const styles = StyleSheet.create({
     height: 20,
   },
   menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
     fontSize: 18,
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC',
+  },
+  menuOptionText: {
+    marginLeft: 10,
+    fontSize: 15, // Espacement entre l'icône et le texte
   },
   imageContainer: {
     flexDirection: 'row',
