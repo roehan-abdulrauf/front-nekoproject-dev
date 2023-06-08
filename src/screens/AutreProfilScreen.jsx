@@ -60,8 +60,8 @@ const AutreProfilScreen = ({ navigation }) => {
           </MenuOptions>
         </Menu>
       </View>
-      <Text style={styles.screenName}>Profil utilisateur</Text>
       <View style={styles.container}>
+      <Text style={styles.screenName}>Profil utilisateur</Text>
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           {/* {image && <Image source={{ uri: image }} style={{ width: 200, height: 200, }} />}
           <Button title="changer l'image" onPress={pickImage} /> */}
@@ -128,18 +128,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     zIndex: 0, elevation: 0
   },
-  profileImage: {
-    width: '100%',
-    height: '100%',
+  imageContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   profileImg: {
-    position: "relative", left: 80,
-    width: '50%',
-    height: '25%',
-    margin: 0,
-    borderRadius: 80,
-    marginBottom: 10,
-    marginTop: 10
+    width: 100, // Ajustez la largeur souhaitée de l'image
+    height: 100, // Ajustez la hauteur souhaitée de l'image
   },
   formContainer: {
     marginBottom: 30,
@@ -150,10 +146,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'black',
     height: 50,
-    padding: 12,
-    margin: 10,
+    padding: 3,
+    marginBottom: 20,
     border: 0,
-    padding: 0,
     zIndex: 1,
     backgroundColor: 'white',
     borderBottom: '2px solid #eee',

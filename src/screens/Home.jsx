@@ -58,13 +58,22 @@ const Home = ({ navigation }) => {
           </MenuTrigger>
           <MenuOptions>
             <TouchableOpacity onPress={() => navigation.navigate('ProfilScreen')}>
-              <Text style={styles.menuOption}><Icon name="person" size={15} />Mon profil</Text>
+              <View style={styles.menuOption}>
+                <Icon name="person" size={15} />
+                <Text style={styles.menuOptionText}>Mon profil</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => navigation.navigate('MemberScreen')}>
-              <Text style={styles.menuOption}><Icon name="group" size={15} />Member</Text>
+              <View style={styles.menuOption}>
+                <Icon name="group" size={15} />
+                <Text style={styles.menuOptionText}>Member</Text>
+              </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={logoutUser}>
-              <Text style={styles.menuOption}><Icon name="logout" size={15} />Deconnexion</Text>
+              <View style={styles.menuOption}>
+                <Icon name="logout" size={15} />
+                <Text style={styles.menuOptionText}>Deconnexion</Text>
+              </View>
             </TouchableOpacity>
           </MenuOptions>
         </Menu>
@@ -102,10 +111,16 @@ const styles = StyleSheet.create({
     height: 20,
   },
   menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
     fontSize: 18,
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC',
+  },
+  menuOptionText: {
+    marginLeft: 10,
+    fontSize: 15, // Espacement entre l'icône et le texte
   },
   container: {
     flexDirection: 'row',
@@ -128,33 +143,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 8,
   },
-  // container: {
-  //   flex: 1,
-
-  //   marginTop:50,
-  //   justifyContent: 'center',
-  //   flexDirection: 'row',
-  //   alignItems: 'center',
-  //   padding: 16,
-  //   borderBottomWidth: 1,
-
-  // },
-  // groupInfoContainer: {
-  //       flexDirection: 'row',
-  //       alignItems: 'center',
-  //       justifyContent: 'flex-start',
-  //       width: '80%',
-  //       padding: 16,
-  //       backgroundColor: '#F5F5F5',
-  //       borderRadius: 8,
-  //     },
-  //     groupLogo: {
-  //       width: 50,
-  //       height: 50,
-  //       borderRadius: 25,
-  //       marginRight: 16,
-  //     },
-
 });
 
 export default Home;
