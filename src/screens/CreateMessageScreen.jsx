@@ -1,24 +1,16 @@
-import { StyleSheet, View, TextInput, FlatList, TouchableOpacity, Text, Image, Alert } from 'react-native';
-import { Menu, MenuOptions, MenuTrigger, MenuProvider } from 'react-native-popup-menu';
+import { StyleSheet, View, TextInput, FlatList, TouchableOpacity, Text } from 'react-native';
+import { MenuProvider } from 'react-native-popup-menu';
 import socketService from '../components/utile/socketsService';
 import { useAuth } from '../components/utile/AuthContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { Logout } from '../components/utile/Logout.js';
 import React, { useState, useEffect } from 'react';
 import IP_ADRESS from '../components/utile/env';
 import Moment from 'moment';
 import axios from 'axios';
-import NavBar from '../components/NavBar.js';
-import { BackHandler } from 'react-native';
 
 const MessageScreen = ({ navigation, route }) => {
-
   const [newMessage, setNewMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [chatId, setChatId] = useState('');
-  const [chatPatnerPseudo, setChatPartnerPseudo] = useState('');
-  const [chatInitiatorId, setChatInitiatorId] = useState('');
-  const [chatInitiatorPseudo, setChatInitiatorPseudo] = useState('');
 
   // Check Text error
   const [postMessageError, setPostMessageError] = useState('');
@@ -26,92 +18,8 @@ const MessageScreen = ({ navigation, route }) => {
   const [user, setUser] = useAuth();
 
   // Accéder aux infos du chat item depuis route.params
-  const startChatName = route.params && route.params.startChatName;
-  const startChatId = route.params && route.params.startChatId;
-  const startChatInitiator = route.params && route.params.startChatInitiator;
-  const startChatInitiatorPseudo = route.params && route.params.startChatInitiatorPseudo;
-  const startChatUserId = route.params && route.params.startChatUserId;
-  const startChatUserName = route.params && route.params.startChatUserName;
-
-  const initializeChat = async () => {
-    if (startChatUserId && startChatUserId !== null) {
-      try {
-        const getResponse = await axios.get(`http://${IP_ADRESS}:5000/api/chatRooms`, {
-          headers: { 'Authorization': `Bearer ${user.token}` }
-        });
-        if (getResponse.status === 200) {
-          const responseData = getResponse.data;
-
-          let matchingChatRoomId = null;
-
-          // Filtrer les chatRooms qui ont un type "chat"
-          const chatRoomsOfTypeChat = responseData.filter(chatRoom => chatRoom.type === 'chat');
-
-          for (const chatRoom of chatRoomsOfTypeChat) {
-            const attendees = chatRoom.attendees;
-            const userAttendeeIndex = attendees.indexOf(user._id);
-            const startChatUserAttendeeIndex = attendees.indexOf(startChatUserId);
-
-            if (userAttendeeIndex !== -1 && startChatUserAttendeeIndex !== -1) {
-              // Les deux IDs sont présents dans les attendees de cette chatRoom
-              matchingChatRoomId = chatRoom._id;
-              setChatId(matchingChatRoomId);
-              setChatInitiatorId(chatRoom.initiator);
-              setChatPartnerPseudo(chatRoom.patnerPseudo);
-              setChatInitiatorPseudo(chatRoom.initiatorPseudo);
-              console.log(`startChatUserId (${startChatUserId}) est présent dans la chatRoom avec id : ${chatRoom._id}`);
-              break; // Sortir de la boucle car le chatRoom a été trouvé
-            } else {
-              console.log(`startChatUserId (${startChatUserId}) n'est pas présent dans la chatRoom avec id : ${chatRoom._id}`);
-            }
-          }
-
-          // Si aucune chatRoom correspondante n'a été trouvée, créer une nouvelle chatRoom
-          if (matchingChatRoomId === null && startChatUserName && startChatUserName !== "") {
-            try {
-              const selectedIds = [user._id, startChatUserId];
-              const data = {
-                type: 'chat',
-                chatRoomName: 'Chat privé',
-                initiatorPseudo: user.pseudo,
-                patnerPseudo: startChatUserName,
-                attendees: selectedIds
-              };
-              const postResponse = await axios.post(`http://${IP_ADRESS}:5000/api/chatRooms`, data, {
-                headers: { 'Authorization': `Bearer ${user.token}` }
-              });
-
-              if (postResponse.status === 200) {
-                const id = postResponse.data._id;
-                setChatId(postResponse.data._id);
-                setChatInitiatorId(postResponse.data.initiator);
-                setChatPartnerPseudo(postResponse.data.patnerPseudo);
-                setChatInitiatorPseudo(postResponse.data.initiatorPseudo);
-                if (id) {
-                  setChatId(id);
-                } else {
-                  console.log("ID du chatRoom non trouvé dans la réponse de l'API");
-                }
-              } else {
-                console.log("Erreur lors de la création de la chatRoom");
-              }
-            } catch (error) {
-              console.error(error);
-            }
-          }
-        } else {
-          console.log("Erreur lors de la récupération des chatRooms");
-        }
-      } catch (error) {
-        console.error(error);
-      }
-    } else if (startChatId && startChatId !== null) {
-      setChatId(startChatId);
-      setChatPartnerPseudo(startChatName);
-      setChatInitiatorId(startChatInitiator);
-      setChatInitiatorPseudo(startChatInitiatorPseudo);
-    }
-  };
+  const chatId = route.params && route.params.chatId;
+  const chatName = route.params && route.params.chatName;
 
   const handleBack = () => {
     navigation.goBack();
@@ -128,7 +36,6 @@ const MessageScreen = ({ navigation, route }) => {
           return 0;
         });
         setMessages(responseData);
-        // socketService.emit("send_message",responseData);
       } else {
         console.log('error');
       }
@@ -139,6 +46,10 @@ const MessageScreen = ({ navigation, route }) => {
   };
 
   const messagesForCurrentChat = messages.filter(item => item.chatRoomId === chatId);
+
+  const handleUserPress = (user) => {
+    navigation.navigate('AutreProfilScreen', { user });
+  };
 
   const handleSendMessage = async () => {
     if (newMessage === '') {
@@ -159,11 +70,13 @@ const MessageScreen = ({ navigation, route }) => {
         if (response.status === 200) {
           setNewMessage('');
           console.log('request POST message, success !');
-        } else {
+        }
+        else {
           console.log('error');
           console.log(response.status);
         }
       } catch (error) {
+        console.error(error);
         console.log(error.response);
         console.log('request POST message, error !');
       }
@@ -171,47 +84,13 @@ const MessageScreen = ({ navigation, route }) => {
   };
 
   useEffect(() => {
-    const initialize = async () => {
-      // Vérifier si le chatId est déjà défini
-      if (chatId) {
-        console.log('Chat déjà initialisé. ChatId:', chatId);
-        return; // Sortir de la fonction car le chatId est déjà défini
-      }
-      // Si le chatId n'est pas défini, alors appeler initializeChat
-      await initializeChat();
-      await fetchMessages();
-    };
-
-    initialize(); // Appelé au chargement initial
+    fetchMessages();
     socketService.initializeSocket();
     socketService.on("socket_message", (msg) => {
       fetchMessages();
       setMessages(messages => [...messages, msg]);
     });
-  }, []); // Tableau de dépendances vide pour exécuter ce useEffect une seule fois au chargement initial
-
-  // useEffect(() => {
-  //   // Utilisez componentDidUpdate pour mettre à jour le chatId en fonction des nouvelles informations de la route
-  //   if (route.params && route.params.startChatId && route.params.startChatId !== chatId) {
-  //     setChatId(route.params.startChatId);
-  //   }
-  // }, [route.params.startChatId]); // Surveiller les changements de startChatId uniquement
-
-  // useEffect(() => {
-  //   // Utilisez componentDidUpdate pour mettre à jour le chatRoomName en fonction des nouvelles informations de la route
-  //   if (route.params && route.params.startChatName && route.params.startChatName !== chatPatnerPseudo) {
-  //     setChatPartnerPseudo(route.params.startChatName);
-  //   }
-  // }, [route.params.startChatName]); // Surveiller les changements de startChatName uniquement
-
-  useEffect(() => {
-    const backAction = () => {
-      navigation.navigate('HomeMessages');
-      return true;
-    };
-    const backHandler = BackHandler.addEventListener('hardwareBackPress', backAction);
-    return () => backHandler.remove();
-  }, []);
+  }, [postMessageError]);
 
   return (
     <MenuProvider style={styles.menuProvider}>
@@ -219,18 +98,16 @@ const MessageScreen = ({ navigation, route }) => {
         <TouchableOpacity>
           <Icon name="keyboard-backspace" color="white" size={30} onPress={handleBack} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.chatRoom}>
+        <TouchableOpacity style={styles.chatRoom} onPress={() => handleUserPress(user)}>
           <View>
             <Icon name="account-circle" color="white" size={50} />
           </View>
           <View style={{ marginLeft: 10 }}>
-            {
-              user._id !== chatInitiatorId ? (
-                <Text style={styles.chatRoomTitle}>{chatInitiatorPseudo}</Text>
-              ) : (
-                <Text style={styles.chatRoomTitle}>{chatPatnerPseudo}</Text>
-              )
-            }
+            {chatName ? (
+              <Text style={styles.chatRoomTitle}>{chatName}</Text>
+            ) : (
+              <Text>Loading...</Text>
+            )}
           </View>
         </TouchableOpacity>
       </View>
@@ -288,10 +165,12 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: 'row',
+    // justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#ff6e40',
     height: 100,
     paddingTop: 30,
+    // paddingBottom: 10,
     paddingLeft: 16,
     paddingRight: 16,
   },
@@ -334,6 +213,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     flexDirection: 'row',
+    // justifyContent: 'space-between',
     alignItems: 'center',
   },
   container: {
@@ -387,6 +267,8 @@ const styles = StyleSheet.create({
     fontSize: 10,
     flex: 1,
     alignSelf: 'flex-end',
+    // padding: 5,
+    // color: 'white',
   },
   inputContainer: {
     flexDirection: 'row',

@@ -1,34 +1,66 @@
-import { View, Text, Image, TextInput, FlatList, ScrollView, TouchableOpacity, StyleSheet, Button, Alert } from 'react-native';
+import { View, Text, Image, TextInput, ScrollView, TouchableOpacity, StyleSheet, Button, Alert, Modal } from 'react-native';
 import { Menu, MenuOptions, MenuTrigger, MenuProvider } from 'react-native-popup-menu';
 import { updatePasswordUser } from '../components/utile/updatePasswordUser.js';
 import { updatePseudoUser } from '../components/utile/updatePseudoUser.js';
 import { updateMailUser } from '../components/utile/updateMailUser.js';
 import { updateBioUser } from '../components/utile/updateBioUser.js';
-import { updatePhotoUser } from '../components/utile/updatePhotoUser.js';
-// import ImageEditor from '@react-native-community/image-editor';
-// import ImagePicker from 'react-native-image-picker';
-import * as Permissions from 'expo-permissions';
-import { Camera } from 'expo-camera';
+import { Camera, CameraType } from 'expo-camera';
 import * as MediaLibrary from 'expo-media-library'; // Added import statement
 import * as ImagePicker from 'expo-image-picker';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useAuth } from '../components/utile/AuthContext';
 import { Logout } from '../components/utile/Logout.js';
 import React, { useState, useEffect } from 'react';
+import NavBar from '../components/NavBar.js';
 
 const ProfilScreen = ({ navigation }) => {
 
-  const [pseudo, setPseudo] = useState('');
-  const [email, setEmail] = useState('');
-  const [photo, setPhoto] = useState(null);
-  const [hasCameraPermission, setHasCameraPermission] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
-  const [password, setPassword] = useState('');
+  const [newPseudo, setNewPseudo] = useState('');
+  const [newEmail, setNewEmail] = useState('');
+  const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [bio, setBio] = useState('');
-  const [message, setMessage] = useState('');
+  const [newBio, setNewBio] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
+  const [succesMessage, setSuccesMessage] = useState('');
+  const [isEditingPseudo, setIsEditingPseudo] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [isEditingPassword, setIsEditingPassword] = useState(false);
+  const [permission, requestPermission] = Camera.useCameraPermissions();
+  const [selectedImage, setSelectedImage] = useState(null);
 
   const [user, setUser] = useAuth();
+
+  const [activeScreen, setActiveScreen] = useState('profile');
+
+  const handleNavPress = (screen) => {
+    setActiveScreen(screen);
+  };
+
+  const openPseudoModal = () => {
+    setIsEditingPseudo(true);
+  };
+
+  const openEmailModal = () => {
+    setIsEditingEmail(true);
+  };
+
+  const openPasswordModal = () => {
+    setIsEditingPassword(true);
+  };
+
+  const openBioModal = () => {
+    setIsEditingBio(true);
+  };
+
+  const closeModals = () => {
+    setIsEditingPseudo(false);
+    setIsEditingEmail(false);
+    setIsEditingPassword(false);
+    setIsEditingBio(false);
+    setErrorMessage('');
+    setSuccesMessage('');
+  };
 
   const logoutUser = () => {
     Alert.alert(
@@ -62,255 +94,335 @@ const ProfilScreen = ({ navigation }) => {
   const validRegexEmail = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
   const validRegexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
 
-  // // function to request permission to access camera roll
-  // const getPermissionAsync = async () => {
-  //   if (Platform.OS !== 'web') {
-  //     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //     if (status !== 'granted') {
-  //       alert('Sorry, we need camera roll permissions to make this work!');
-  //     }
-  //   }
-  // }
-
-
-  // useEffect(() => {
-  //   (async () => {
-  //     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  //     if (status !== 'granted') {
-  //       Alert.alert('Permission insuffisante', 'Désolé, nous avons besoin de l\'autorisation pour accéder à votre galerie de photos!', [{ text: 'OK' }]);
-  //     }
-
-  //     const { cameraStatus } = await ImagePicker.requestCameraPermissionsAsync();
-  //     if (cameraStatus !== 'granted') {
-  //       Alert.alert('Permission insuffisante', 'Désolé, nous avons besoin de l\'autorisation pour accéder à votre appareil photo!', [{ text: 'OK' }]);
-  //     }
-  //   })();
-  // }, []);
-
-  // Demande les permissions pour accéder à la caméra et à la galerie
-  // const getPermissionsAsync = async () => {
-  //   const { status: cameraStatus } = await Camera.requestCameraPermissionsAsync();
-  //   const { status: mediaLibStatus } = await MediaLibrary.requestPermissionsAsync();
-
-  //   if (cameraStatus !== 'granted' || mediaLibStatus !== 'granted') {
-  //     alert('Vous devez autoriser l\'accès à la caméra et à la galerie pour utiliser cette fonctionnalité.');
-  //   }
-  // };
-
-  async function getPermissionsAsync() {
-    const { status: cameraStatus } = await Permissions.getAsync(Permissions.CAMERA)
-    const { status: mediaLibraryStatus } = await Permissions.getAsync(Permissions.MEDIA_LIBRARY);
-
-    if (cameraStatus !== 'granted' || mediaLibraryStatus !== 'granted') {
-      alert('Les permissions nécessaires n\'ont pas été accordées.');
-      return false;
-    }
-
-    return true;
-  }
-
-  const openImagePickerAsync = async (type) => {
-    let pickerResult;
-    if (type === 'gallery') {
-      let image = await ImagePicker.launchImageLibraryAsync();
-      if (!image.cancelled) {
-        pickerResult = image;
-        setImage(image.assets[0].uri);
-      }
-    } else if (type === 'camera') {
-      const hasPermissions = await getPermissionsAsync();
-      if (!hasPermissions) {
-        return;
-      }
-      let image = await ImagePicker.launchCameraAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: false,
-        quality: 1,
-      });
-      if (!image.cancelled) {
-        pickerResult = image;
-        setImage(image.assets[0].uri);
-      }
-    }
-
-    if (!pickerResult) {
-      return;
-    }
-
-    setSelectedImage({ localUri: pickerResult.uri });
-  };
-
-
-  //  // call the function to request permission when component mounts
-  //  useEffect(() => {
-  //   getPermissionAsync();
-  // }, []);
-
-  const updateUser = () => {
-
-    const validPseudo = pseudo ? pseudo.length > 5 : false;
-    const validMail = email ? email.match(validRegexEmail) : false;
-    const validPassword = password ? password.match(validRegexPassword) : false;
-    const matchPassword = password === confirmPassword ? true : false;
-    const isBanned = user.isBanned;
-    let update;
-
-    // if (image) {
-    //   formData.append('image', {
-    //     uri: image,
-    //     name: 'image.jpg',
-    //     type: 'image/jpg',
-    //   });
-    // }
-
-    if (validPseudo || validMail || (validPassword && matchPassword) || bio) {
+  const savePseudoChanges = () => {
+    if (newPseudo) {
+      const validPseudo = newPseudo ? newPseudo.length > 5 : false;
       if (validPseudo) {
-        setMessage('');
-        update = updatePseudoUser(pseudo, user.token);
-        setMessage('Vos informations ont été modifiées.');
-      }
-      if (validMail) {
-        setMessage('');
-        update = updateMailUser(email, user.token);
-        setMessage('Vos informations ont été modifiées.');
-      }
-      if (validPassword && matchPassword) {
-        setMessage('');
-        update = updatePasswordUser(password, user.token);
-        setMessage('Vos informations ont été modifiées.');
-      }
-      if (bio) {
-        update = updateBioUser(bio, user.token);
-        setMessage('Vos informations ont été modifiées.');
+        // setErrorMessage('');
+        update = updatePseudoUser(newPseudo, user.token);
+        setSuccesMessage('Votre pseudo à été modifiée avec succès.');
+        setIsEditingPseudo(false);
+        setUser({ ...user, pseudo: newPseudo });
+      } else {
+        setErrorMessage('Votre pseudo doit faire plus de 5 caractères.');
+        setNewPseudo(user.pseudo);
       }
     } else {
-      setMessage('Veuillez remplir au moins un des champs pour modifier vos informations, vous devez également confirmer votre nouveau mot de passe.');
+      setErrorMessage('Veuillez remplir le champs svp.');
+      setNewPseudo(user.pseudo);
     }
-  }
+  };
+
+  const saveEmailChanges = () => {
+    if (newEmail) {
+      const validMail = newEmail ? newEmail.match(validRegexEmail) : false;
+      if (validMail) {
+        update = updateMailUser(newEmail, user.token);
+        setSuccesMessage('Votre adresse mail à été modifiée avec succès.');
+        setIsEditingEmail(false);
+        setUser({ ...user, email: newEmail });
+      } else {
+        setErrorMessage('Votre adresse mail n\'est pas valide.');
+        setNewEmail(user.email);
+      }
+    } else {
+      setErrorMessage('Veuillez remplir le champs svp.');
+      setNewEmail(user.email);
+    }
+  };
+
+  const saveBioChanges = () => {
+    if (newBio) {
+      update = updateBioUser(newBio, user.token);
+      setSuccesMessage('Votre bio à été modifiée avec succès.');
+      setIsEditingBio(false);
+      setUser({ ...user, bio: newBio });
+    } else {
+      setErrorMessage('Veuillez remplir le champs svp.');
+      setNewBio(user.bio);
+    }
+  };
+
+  const savePasswordChanges = () => {
+    if (newPassword && confirmPassword) {
+      const validPassword = newPassword ? newPassword.match(validRegexPassword) : false;
+      const matchPassword = newPassword === confirmPassword ? true : false;
+      if (validPassword && matchPassword) {
+        update = updatePasswordUser(newPassword, user.token);
+        setSuccesMessage('Votre mot de passe à été modifiée avec succès.');
+        setIsEditingPassword(false);
+      } else {
+        setErrorMessage('Votre mot de psse n\'est pas valide.');
+      }
+    } else {
+      setErrorMessage('Veuillez remplir les deux champs svp.');
+    }
+  };
 
   return (
-    <MenuProvider>
+    <MenuProvider style={styles.menuProvider}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-          <Text style={styles.headerTitle}>NekoChat</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('HomeGroups')}>
+          <Text style={styles.headerTitle}>Neko Tchat</Text>
         </TouchableOpacity>
         <Menu style={styles.menuOptions}>
-          <MenuTrigger>
-            <Image source={require('../images/menu_icon.png')} style={styles.menuIcon} />
+          <MenuTrigger style={styles.menuTrigger} onPress={logoutUser} >
+            <Icon name="logout" size={20} color="white" />
+            <Text style={{ fontSize: 12, paddingLeft: 4, color: "white" }}>Déconnexion</Text>
           </MenuTrigger>
-          <MenuOptions>
-            <TouchableOpacity onPress={() => navigation.navigate('ProfilScreen')}>
-              <View style={styles.menuOption}>
-                <Icon name="person" size={15} />
-                <Text style={styles.menuOptionText}>Mon profil</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('MemberScreen')}>
-              <View style={styles.menuOption}>
-                <Icon name="group" size={15} />
-                <Text style={styles.menuOptionText}>Member</Text>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={logoutUser}>
-              <View style={styles.menuOption}>
-                <Icon name="logout" size={15} />
-                <Text style={styles.menuOptionText}>Deconnexion</Text>
-              </View>
-            </TouchableOpacity>
-          </MenuOptions>
         </Menu>
       </View>
       <View style={styles.container}>
         <Text style={styles.screenName}>Mon Profil</Text>
         <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
           <View>
-            <TouchableOpacity style={styles.imageContainer} onPress={() => openImagePickerAsync('gallery')}>
-              <Image source={require("../assets/icons8-saitama-250.png")} style={styles.profileImg} resizeMode="contain" />
-            </TouchableOpacity>
-            <Button
-              title="Sélectionner une image depuis la galerie"
-              onPress={() => openImagePickerAsync('gallery')}
-            />
-            <Button
-              title="Prendre une photo"
-              onPress={() => openImagePickerAsync('camera')}
-            />
-            {selectedImage !== null && (
-              <Image
-                source={{ uri: selectedImage.localUri }}
-                style={{ width: 300, height: 300 }}
-              />
-            )}
-            <Text>Votre pseudo :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={`${user.pseudo}`}
-              autoCapitalize='none'
-              keyboardType="default"
-              autoFocus={false}
-              value={pseudo}
-              onChangeText={(text) => setPseudo(text)}
-              onChange={text => setPseudo(text)}
-            />
-            <Text>Votre email :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={`${user.email}`}
-              autoCapitalize='none'
-              keyboardType="email-address"
-              textContentType='emailAdress'
-              autoFocus={false}
-              value={email}
-              onChangeText={(text) => setEmail(text)}
-              onChange={text => setEmail(text)}
-            />
-            <Text>Votre bio :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Entrez votre bio"
-              keyboardType="password"
-              textContentType="bio"
-              value={bio}
-              onChange={text => setBio(text)}
-              onChangeText={text => setBio(text)}
-            />
-            <Text>Votre mot de passe :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Entrez votre Password"
-              autoCapitalize='none'
-              textContentType="password"
-              autoCorrect={false}
-              secureTextEntry={true}
-              value={password}
-              onChangeText={(text) => setPassword(text)}
-              onChange={text => setPassword(text)}
-            />
-            <Text>Confirmer votre mot de passe :</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Confirmer votre mot de passe"
-              textContentType="password"
-              secureTextEntry={true}
-              value={confirmPassword}
-              onChange={text => setConfirmPassword(text)}
-              onChangeText={text => setConfirmPassword(text)}
-            />
-            <TouchableOpacity style={styles.button} onPress={updateUser}>
-              <Text style={styles.buttonText}>Entregistrer les modifications</Text>
-            </TouchableOpacity>
-            <Text>
-              {message}
-            </Text>
+            {succesMessage && (
+              <Text style={styles.succesMessage}>
+                {succesMessage}
+              </Text>)}
+            <View style={styles.profileContainer}>
+              <Icon name="person" size={120} style={styles.profileIcon} />
+              <TouchableOpacity style={styles.cameraIcon} onPress={() => navigation.navigate('CameraScreen')}>
+                <Icon name="photo-camera" size={24} color="white" onPress={() => openImagePickerAsync('camera')} />
+              </TouchableOpacity>
+            </View>
+            {selectedImage && <Image source={{ uri: selectedImage }} style={{ width: 200, height: 200 }} />}
+            <View style={styles.allInputContainer}>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputCon}>
+                  <Text>Votre email :</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={`${user.email}`}
+                    autoCapitalize='none'
+                    keyboardType="email-address"
+                    textContentType='emailAdress'
+                    autoFocus={false}
+                    value={newEmail}
+                    onChangeText={(text) => setNewEmail(text)}
+                    onChange={text => setNewEmail(text)}
+                    editable={false}
+                  />
+                </View>
+              </View>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputCon}>
+                  <Text>Votre pseudo :</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder={`${user.pseudo}`}
+                    autoCapitalize='none'
+                    keyboardType="default"
+                    autoFocus={false}
+                    value={newPseudo}
+                    onChangeText={(text) => setNewPseudo(text)}
+                    onChange={text => setNewPseudo(text)}
+                    editable={false}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.editProfileImageIcon}
+                  onPress={openPseudoModal}
+                >
+                  <Icon name="edit" size={24} color="#ff6e40" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputCon}>
+                  <Text>Votre bio :</Text>
+                  {user.bio === "Salut! J'utilise Neko Chat." ? (
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Salut! J'utilise Neko Chat."
+                      keyboardType="default"
+                      value={newBio}
+                      onChange={text => setNewBio(text)}
+                      onChangeText={text => setNewBio(text)}
+                      editable={false}
+                    />
+                  ) :
+                    <TextInput
+                      style={styles.input}
+                      placeholder={`${user.bio}`}
+                      keyboardType="default"
+                      value={newBio}
+                      onChange={text => setNewBio(text)}
+                      onChangeText={text => setNewBio(text)}
+                      editable={false}
+                    />
+                  }
+                </View>
+                <TouchableOpacity
+                  style={styles.editProfileImageIcon}
+                  onPress={openBioModal}
+                >
+                  <Icon name="edit" size={24} color="#ff6e40" />
+                </TouchableOpacity>
+              </View>
+              <View style={styles.inputContainer}>
+                <View style={styles.inputCon}>
+                  <Text>Votre mot de passe :</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="**************"
+                    autoCapitalize='none'
+                    textContentType="password"
+                    autoCorrect={false}
+                    secureTextEntry={true}
+                    value={newPassword}
+                    onChangeText={(text) => setNewPassword(text)}
+                    onChange={text => setNewPassword(text)}
+                    editable={false}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.editProfileImageIcon}
+                  onPress={openPasswordModal}
+                >
+                  <Icon name="edit" size={24} color="#ff6e40" />
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.centeredView}>
+                <Modal visible={isEditingPseudo} onRequestClose={closeModals} onBackdropPress={closeModals} transparent={true}>
+                  <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                      <View style={styles.inputContainer}>
+                        <View style={styles.inputCon}>
+                          {errorMessage && (
+                            <Text style={styles.errorMessage}>
+                              {errorMessage}
+                            </Text>
+                          )}
+                          <Text>Modifier votre pseudo :</Text>
+                          <TextInput
+                            style={styles.input}
+                            placeholder={`${user.pseudo}`}
+                            autoCapitalize='none'
+                            keyboardType="default"
+                            autoFocus={false}
+                            value={newPseudo}
+                            onChangeText={(text) => setNewPseudo(text)}
+                            onChange={text => setNewPseudo(text)}
+                          />
+                        </View>
+                      </View>
+                      <View style={styles.editButton}>
+                        <Button title="Annuler" onPress={closeModals} color='#D6D9D3' />
+                        <Button title="Enregistrer" onPress={savePseudoChanges} color='#ffc13b' />
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+
+                <Modal visible={isEditingBio} onRequestClose={closeModals} onBackdropPress={closeModals} transparent={true}>
+                  <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                      <View style={styles.inputContainer}>
+                        <View style={styles.inputCon}>
+                          {errorMessage && (
+                            <Text style={styles.errorMessage}>
+                              {errorMessage}
+                            </Text>
+                          )}
+                          <Text>Modifier votre bio</Text>
+                          {user.bio === "Salut! J'utilise Neko Chat." ? (
+                            <TextInput
+                              style={styles.input}
+                              placeholder="Nouveau bio"
+                              autoCapitalize='none'
+                              keyboardType="default"
+                              autoFocus={false}
+                              value={newBio}
+                              onChangeText={text => setNewBio(text)}
+                            />
+                          ) :
+                            <TextInput
+                              style={styles.input}
+                              placeholder={`${user.bio}`}
+                              autoCapitalize='none'
+                              keyboardType="default"
+                              autoFocus={false}
+                              value={newBio}
+                              onChangeText={text => setNewBio(text)}
+                            />
+                          }
+                        </View>
+                      </View>
+                      <View style={styles.editButton}>
+                        <Button title="Annuler" onPress={closeModals} color='#D6D9D3' />
+                        <Button title="Enregistrer" onPress={saveBioChanges} color='#ffc13b' />
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+
+                <Modal visible={isEditingPassword} onRequestClose={closeModals} onBackdropPress={closeModals} transparent={true}>
+                  <View style={styles.modalContainer}>
+                    <View style={styles.modalContent}>
+                      <View style={styles.inputContainer}>
+                        <View style={styles.inputCon}>
+                          {errorMessage && (
+                            <Text style={styles.errorMessage}>
+                              {errorMessage}
+                            </Text>
+                          )}
+                          <Text>Modifier votre mot de passe :</Text>
+                          <TextInput
+                            style={styles.input}
+                            placeholder="Mot de passe"
+                            autoCapitalize='none'
+                            textContentType="password"
+                            autoCorrect={false}
+                            secureTextEntry={true}
+                            value={newPassword}
+                            onChangeText={(text) => setNewPassword(text)}
+                            onChange={text => setNewPassword(text)}
+                          />
+                        </View>
+                      </View>
+                      <View style={styles.inputContainer2}>
+                        <Text>Confirmer votre nouveau mot de passe :</Text>
+                        <TextInput
+                          style={styles.input}
+                          placeholder="Confirmation mot de passe"
+                          textContentType="password"
+                          secureTextEntry={true}
+                          value={confirmPassword}
+                          onChange={text => setConfirmPassword(text)}
+                          onChangeText={text => setConfirmPassword(text)}
+                        />
+                        {/* </View> */}
+                      </View>
+                      <View style={styles.editButton}>
+                        <Button title="Annuler" onPress={closeModals} color='#D6D9D3' />
+                        <Button title="Enregistrer" onPress={savePasswordChanges} color='#ffc13b' />
+                      </View>
+                    </View>
+                  </View>
+                </Modal>
+              </View>
+            </View>
           </View>
         </ScrollView>
       </View>
-      {/* </View> */}
+      <View style={styles.navBarContainer}>
+        <NavBar activeScreen={activeScreen} onPress={handleNavPress} navigation={navigation} />
+      </View>
     </MenuProvider>
   );
 };
 
 const styles = StyleSheet.create({
+  menuProvider: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  menuTrigger: {
+    flexDirection: 'row',
+    padding: 4,
+    alignItems: 'center',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -318,16 +430,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff6e40',
     height: 100,
     paddingTop: 30,
-    // paddingBottom: 10,
     paddingLeft: 16,
     paddingRight: 16,
-    // zIndex: 1,
   },
   body: {
     flexGrow: 1,
-    // paddingTop: 10,
-    // paddingBottom: 20, // Hauteur maximale de la partie corps
-    minHeight: 800,
+    minHeight: 600,
   },
   menuOptions: {
     zIndex: 1, elevation: 1
@@ -339,7 +447,7 @@ const styles = StyleSheet.create({
   },
   screenName: {
     color: '#ff6e40',
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: 'bold',
     paddingBottom: 10,
   },
@@ -364,29 +472,62 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginBottom: 100,
   },
-  imageContainer: {
+  profileContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 20,
   },
-  profileImg: {
-    width: 100, // Ajustez la largeur souhaitée de l'image
-    height: 100, // Ajustez la hauteur souhaitée de l'image
+  profileIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 2,
+    borderColor: 'black',
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 10,
+    right: 100,
+    backgroundColor: '#ff6e40',
+    padding: 8,
+    borderRadius: 20,
+  },
+  iconContainer: {
+    flexDirection: 'row', // Aligns the icons side by side
+    justifyContent: 'center', // Centers the icons horizontally
+    marginVertical: 10, // Adjust as needed
   },
   formContainer: {
-    // marginBottom: 30,
     width: '90%',
     zIndex: 0, elevation: 0
   },
-  input: {
+  allInputContainer: {
+    marginTop: 30,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: 'black',
+    borderBottomColor: 'gray',
+    paddingVertical: 5,
+    paddingTop: 10,
+  },
+  inputContainer2: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'gray',
+    paddingVertical: 5,
+    paddingTop: 30,
+  },
+  inputCon: {
+    width: '90%',
+  },
+  input: {
     height: 50,
     padding: 3,
-    marginBottom: 20,
     border: 0,
     zIndex: 1,
-    backgroundColor: 'white',
     borderBottom: '2px solid #eee',
     fontSize: 14,
     lineHeight: 30
@@ -396,13 +537,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     backgroundColor: '#FF6E40',
-    // borderRadius: 20,
     alignItems: 'center',
     marginTop: 10,
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 22,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#D6D9D3',
+    borderRadius: 10,
+    padding: 20,
+    minWidth: 300,
+  },
+  succesMessage: {
+    color: 'green',
+  },
+  errorMessage: {
+    color: 'red',
+    paddingBottom: 15,
+  },
+  navBarContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 56,
+    backgroundColor: '#D6D6D6',
+  },
+  editButton: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 30,
+    color: 'black',
   },
 });
 

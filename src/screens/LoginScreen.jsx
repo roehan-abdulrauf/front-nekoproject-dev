@@ -1,10 +1,8 @@
 import React, { useContext, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, SafeAreaView, StatusBar, Alert } from 'react-native';
-import axios, { isCancel, AxiosError } from 'axios';
+import axios from 'axios';
 import { useAuth } from '../components/utile/AuthContext';
 import IP_ADRESS from '../components/utile/env';
-import { Linking } from 'react-native';
-import queryString from 'query-string';
 import { AntDesign } from '@expo/vector-icons';
 import randomstring from 'randomstring';
 
@@ -33,7 +31,6 @@ const Login = ({ navigation }) => {
     });
     try {
       const postMail = await axios.post(`http://${IP_ADRESS}:5000/api/mail`, {
-        // pseudo: username,
         email: email,
         verificationCode: verificationCode,
       });
@@ -41,7 +38,6 @@ const Login = ({ navigation }) => {
         navigation.navigate('MailValidation', { email, password, verificationCode });
       }
     } catch (error) {
-      // console.log(error);
       setErrorMessage('Une erreur s\'est produite lors de l\'envoi du code de vérification.');
     }
   }
@@ -49,25 +45,6 @@ const Login = ({ navigation }) => {
   const toggleShowPassword = () => {
     setShowPassword(!showPassword);
   };
-
-  // // Fonction qui récupère l'URL initiale
-  // const getInitialUrl = async () => {
-  //   // Vérifie si l'application a été ouverte avec une URL
-  //   const initialUrl = await Linking.getInitialURL();
-
-  //   // Si une URL a été trouvée, extraire le token de l'URL
-  //   if (initialUrl) {
-  //     const { token } = queryString.parseUrl(initialUrl).query;
-  //     console.log(`Token: ${token}`);
-  //     if (token != undefined && token != null && token != '') {
-  //       navigation.navigate('MailValidation');
-  //     }
-  //   }
-  // }
-
-  // // Appeler la fonction pour récupérer l'URL initiale
-  // getInitialUrl();
-
 
   const seConnecter = () => {
 
@@ -86,20 +63,19 @@ const Login = ({ navigation }) => {
           password: password,
         })
           .then((response) => {
-            // console.log(response);
             if (response.data.mailVerified === "true") {
               setUser({
                 ...response.data,
                 idToken: response.data.token
               });
-              // console.log(response);
+              console.log(response);
+              console.log('user', user);
+
             } else {
               setErrorMessage2("Vous devez vérifier votre adresse mail avant de vous connecter.");
             }
           })
           .catch((error) => {
-            // console.error(error);
-            // console.log(error);
             setErrorMessage(error.response.data.message)
           });
       } else {
@@ -138,7 +114,7 @@ const Login = ({ navigation }) => {
         )}
         <TextInput
           style={styles.input}
-          placeholder="Entrez votre Pseudo"
+          placeholder="Entrez votre mail"
           autoCapitalize='none'
           keyboardType="default"
           value={email}
@@ -146,7 +122,7 @@ const Login = ({ navigation }) => {
         <View style={styles.inputPassword}>
           <TextInput
             style={styles.input}
-            placeholder="Entrez votre Password"
+            placeholder="Entrez votre mot de passe"
             autoCapitalize='none'
             textContentType="password"
             autoCorrect={false}
@@ -185,8 +161,6 @@ const styles = StyleSheet.create({
     resizeMode: 'cover'
   },
   imageLogo: {
-    // fontWeight: 'bold',
-    // color: "white",
     alignSelf: "center",
     width: "50%",
     position: "absolute",
