@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, SafeAreaView, StatusBar, Alert } from 'react-native';
-import axios, { isCancel, AxiosError } from 'axios';
+import axios from 'axios';
 import randomstring from 'randomstring';
 import { AntDesign } from '@expo/vector-icons';
 import IP_ADRESS from '../components/utile/env';
@@ -120,7 +120,7 @@ const SignUp = ({ navigation }) => {
             <Text style={styles.errorMessage}>
               {errorMessage}
             </Text>
-          </View>
+          </View> 
         ) :
           <View>
             <Text style={[styles.title, styles.titleMarginTop2]}>S'inscrire</Text>
@@ -128,14 +128,14 @@ const SignUp = ({ navigation }) => {
         }
         <TextInput
           style={styles.input}
-          placeholder="Entrez votre Pseudo"
+          placeholder="Entrez votre pseudo"
           autoCapitalize='none'
           keyboardType="default"
           value={username}
           onChangeText={(text) => setUsername(text)} />
         <TextInput
           style={styles.input}
-          placeholder="Entrez votre Email"
+          placeholder="Entrez votre mail"
           autoCapitalize='none'
           keyboardType="email-address"
           textContentType='emailAddress'
@@ -144,7 +144,7 @@ const SignUp = ({ navigation }) => {
         <View style={styles.inputPassword}>
           <TextInput
             style={styles.input}
-            placeholder="Entrez votre Password"
+            placeholder="Entrez votre mot de passe"
             autoCapitalize='none'
             textContentType="password"
             autoCorrect={false}
@@ -157,7 +157,7 @@ const SignUp = ({ navigation }) => {
         <View style={styles.inputPassword}>
           <TextInput
             style={styles.input}
-            placeholder="Confirmer votre Password"
+            placeholder="Confirmer votre mot de passe"
             autoCapitalize='none'
             textContentType="password"
             autoCorrect={false}

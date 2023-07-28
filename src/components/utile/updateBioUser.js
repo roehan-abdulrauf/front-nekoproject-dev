@@ -14,7 +14,6 @@ export const updateBioUser = (bioUpdate, token) => {
                 }
             })
              .then((res)=>{
-                
                 console.log("Bio modifiée."); 
                 return message = "Bio modifiée.";
             })

@@ -1,13 +1,20 @@
-import { Menu, MenuOptions, MenuTrigger, MenuProvider } from 'react-native-popup-menu';
-import { View, Text, Image, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { Menu, MenuTrigger, MenuProvider } from 'react-native-popup-menu';
+import { View, Text, TextInput, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { Logout } from '../components/utile/Logout.js';
-import { useRoute } from '@react-navigation/native';
+import NavBar from '../components/NavBar.js';
+import React, { useState } from 'react';
 
-const AutreProfilScreen = ({ navigation }) => {
+const AutreProfilScreen = ({ navigation, route }) => {
 
-  const route = useRoute();
-  const { user } = route.params;
+  const [activeScreen, setActiveScreen] = useState('groups');
+
+  // Accéder à la liste item depuis route.params
+  const user = route.params.user;
+
+  const handleNavPress = (screen) => {
+    setActiveScreen(screen);
+  };
 
   const logoutUser = () => {
     Alert.alert(
@@ -38,54 +45,95 @@ const AutreProfilScreen = ({ navigation }) => {
   }
 
   return (
-    <MenuProvider>
+    <MenuProvider style={styles.menuProvider}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
-          <Text style={styles.headerTitle}>NekoChat</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('HomeGroups')}>
+          <Text style={styles.headerTitle}>Neko Tchat</Text>
         </TouchableOpacity>
         <Menu style={styles.menuOptions}>
-          <MenuTrigger>
-            <Image source={require('../images/menu_icon.png')} style={styles.menuIcon} />
+          <MenuTrigger style={styles.menuTrigger} onPress={logoutUser} >
+            <Icon name="logout" size={20} color="white" />
+            <Text style={{ fontSize: 12, paddingLeft: 4, color: "white" }}>Déconnexion</Text>
           </MenuTrigger>
-          <MenuOptions>
-            <TouchableOpacity onPress={() => navigation.navigate('ProfilScreen')}>
-              <Text style={styles.menuOption}><Icon name="person" size={15} />Mon profil</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate('MemberScreen')}>
-              <Text style={styles.menuOption}><Icon name="group" size={15} />Member</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={logoutUser}>
-              <Text style={styles.menuOption}><Icon name="logout" size={15} />Deconnexion</Text>
-            </TouchableOpacity>
-          </MenuOptions>
         </Menu>
       </View>
       <View style={styles.container}>
-      <Text style={styles.screenName}>Profil utilisateur</Text>
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-          {/* {image && <Image source={{ uri: image }} style={{ width: 200, height: 200, }} />}
-          <Button title="changer l'image" onPress={pickImage} /> */}
-        </View>
-        <View style={styles.formContainer}>
-          <Image source={require("../assets/icons8-saitama-250.png")} style={styles.profileImg} />
-          <Text>Pseudo :</Text>
-          <Text style={styles.input}>{user.pseudo}</Text>
-          <Text>Email :</Text>
-          <Text style={styles.input}>{user.mail}</Text>
-          <Text>bio :</Text>
-          {user.bio ? (
-            <Text style={styles.input}>{user.bio}</Text>
-
-          ) :
-            <Text style={styles.input}>Salut! J'utilise Neko Chat.</Text>
-          }
-        </View>
+        <Text style={styles.screenName}>Profil de {user.pseudo}</Text>
+        <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+          <View style={styles.profileContainer}>
+            <Icon name="person" size={120} style={styles.profileIcon} />
+          </View>
+          <View style={styles.allInputContainer}>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputCon}>
+                <Text>Pseudo :</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={`${user.pseudo}`}
+                  autoCapitalize='none'
+                  keyboardType="default"
+                  autoFocus={false}
+                  editable={false}
+                />
+              </View>
+            </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputCon}>
+                <Text>Email :</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={`${user.mail}`}
+                  autoCapitalize='none'
+                  keyboardType="default"
+                  autoFocus={false}
+                  editable={false}
+                />
+              </View>
+            </View>
+            <View style={styles.inputContainer}>
+              <View style={styles.inputCon}>
+                <Text>bio :</Text>
+                {user.bio === "Salut! J'utilise Neko Chat." ? (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Salut! J'utilise Neko Chat."
+                    autoCapitalize='none'
+                    keyboardType="default"
+                    autoFocus={false}
+                    editable={false}
+                  />
+                ) :
+                  <TextInput
+                    style={styles.input}
+                    placeholder={`${user.bio}`}
+                    autoCapitalize='none'
+                    keyboardType="default"
+                    autoFocus={false}
+                    editable={false}
+                  />
+                }
+              </View>
+            </View>
+          </View>
+        </ScrollView>
+      </View>
+      <View style={styles.navBarContainer}>
+        <NavBar activeScreen={activeScreen} onPress={handleNavPress} navigation={navigation} />
       </View>
     </MenuProvider>
   );
 };
 
 const styles = StyleSheet.create({
+  menuProvider: {
+    flex: 1,
+    backgroundColor: 'white',
+  },
+  menuTrigger: {
+    flexDirection: 'row',
+    padding: 4,
+    alignItems: 'center',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -93,10 +141,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff6e40',
     height: 100,
     paddingTop: 30,
-    // paddingBottom: 10,
     paddingLeft: 16,
     paddingRight: 16,
-    // zIndex: 1,
+  },
+  body: {
+    flexGrow: 1,
+    paddingBottom: 80,
+    minHeight: 600,
   },
   menuOptions: {
     zIndex: 1, elevation: 1
@@ -108,7 +159,7 @@ const styles = StyleSheet.create({
   },
   screenName: {
     color: '#ff6e40',
-    fontSize: 18,
+    fontSize: 13,
     fontWeight: 'bold',
     paddingBottom: 10,
   },
@@ -117,37 +168,76 @@ const styles = StyleSheet.create({
     height: 20,
   },
   menuOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
     fontSize: 18,
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#CCCCCC',
   },
-  container: {
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 0, elevation: 0
+  menuOptionText: {
+    marginLeft: 10,
+    fontSize: 15, // Espacement entre l'icône et le texte
   },
-  imageContainer: {
+  container: {
+    padding: 10,
+    backgroundColor: '#fff',
+    marginBottom: 100,
+  },
+  iconContainer: {
+    flexDirection: 'row', // Aligns the icons side by side
+    justifyContent: 'center', // Centers the icons horizontally
+    marginVertical: 10, // Adjust as needed
+  },
+  profileContainer: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 20,
   },
-  profileImg: {
-    width: 100, // Ajustez la largeur souhaitée de l'image
-    height: 100, // Ajustez la hauteur souhaitée de l'image
+  profileIcon: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    borderWidth: 2,
+    borderColor: 'black',
+  },
+  cameraIcon: {
+    position: 'absolute',
+    bottom: 10,
+    right: 100,
+    backgroundColor: '#ff6e40',
+    padding: 8,
+    borderRadius: 20,
+  },
+  allInputContainer: {
+    marginTop: 30,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'gray',
+    paddingVertical: 5,
+    paddingTop: 10,
+  },
+  inputCon: {
+    width: '90%',
+  },
+  otherProfileOption: {
+    alignItems: 'center',
+  },
+  otherProfileOptionPadding: {
+    marginRight: 30,
   },
   formContainer: {
-    marginBottom: 30,
-    width: '90%',
-    zIndex: 0, elevation: 0
+    backgroundColor: '#fff',
+    marginBottom: 100,
   },
   input: {
-    borderBottomWidth: 1,
-    borderBottomColor: 'black',
     height: 50,
     padding: 3,
-    marginBottom: 20,
     border: 0,
     zIndex: 1,
     backgroundColor: 'white',
@@ -160,13 +250,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
     backgroundColor: '#FF6E40',
-    // borderRadius: 20,
     alignItems: 'center',
     marginTop: 10,
+  },
+  buttonAutre: {
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginTop: 20,
+    marginLeft: 20,
+    marginRight: 20,
+    backgroundColor: 'red',
+    alignItems: 'center',
   },
   buttonText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+  navBarContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    height: 56,
+    backgroundColor: '#D6D6D6',
   },
 });
 
