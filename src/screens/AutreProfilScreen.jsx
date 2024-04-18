@@ -92,7 +92,7 @@ const AutreProfilScreen = ({ navigation, route }) => {
             </View>
             <View style={styles.inputContainer}>
               <View style={styles.inputCon}>
-                <Text>bio :</Text>
+                <Text>Bio :</Text>
                 {user.bio === "Salut! J'utilise Neko Chat." ? (
                   <TextInput
                     style={styles.input}

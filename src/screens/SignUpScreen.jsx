@@ -38,8 +38,9 @@ const SignUp = ({ navigation }) => {
       setErrorMessage('Tous les champs sont obligatoires, veuillez les remplir s\'il vous plait.');
     } else {
       setErrorMessage('');
-      if (username.length < 5) {
-        setErrorMessage('Votre pseudo est trop court, il doit faire 5 caractères minimum.');
+      const validRegexUsername = /^[a-zA-Z0-9_-]{5,}$/;
+      if (username.match(validRegexUsername) == null) {
+        setErrorMessage('Votre pseudo doit faire 5 caractères minimum et ne doit contenir aucun caractère spécial.');
 
       } else {
         setErrorMessage('');
@@ -120,7 +121,7 @@ const SignUp = ({ navigation }) => {
             <Text style={styles.errorMessage}>
               {errorMessage}
             </Text>
-          </View> 
+          </View>
         ) :
           <View>
             <Text style={[styles.title, styles.titleMarginTop2]}>S'inscrire</Text>

@@ -91,12 +91,14 @@ const ProfilScreen = ({ navigation }) => {
   }
 
   // Form
+  const validRegexPseudo = /^[a-zA-Z0-9_-]{5,}$/;
   const validRegexEmail = /^[\w\-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
   const validRegexPassword = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[a-zA-Z]).{8,}$/;
+  const validRegexBio = /^[a-zA-Z0-9_!?\u{1F300}-\u{1F64F}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{2B50}-\u{2BFF}]$/u;
 
   const savePseudoChanges = () => {
     if (newPseudo) {
-      const validPseudo = newPseudo ? newPseudo.length > 5 : false;
+      const validPseudo = newPseudo ? newPseudo.match(validRegexPseudo) : false;
       if (validPseudo) {
         // setErrorMessage('');
         update = updatePseudoUser(newPseudo, user.token);
@@ -133,10 +135,16 @@ const ProfilScreen = ({ navigation }) => {
 
   const saveBioChanges = () => {
     if (newBio) {
-      update = updateBioUser(newBio, user.token);
-      setSuccesMessage('Votre bio à été modifiée avec succès.');
-      setIsEditingBio(false);
-      setUser({ ...user, bio: newBio });
+      const validBio = newBio ? newBio.match(validRegexBio) : false;
+      if (validBio) {
+        update = updateBioUser(newBio, user.token);
+        setSuccesMessage('Votre bio à été modifiée avec succès.');
+        setIsEditingBio(false);
+        setUser({ ...user, bio: newBio });
+      } else {
+        setErrorMessage('Votre bio ne doit pas contenir certains caractères.');
+        setNewBio(user.bio);
+      }
     } else {
       setErrorMessage('Veuillez remplir le champs svp.');
       setNewBio(user.bio);
@@ -182,8 +190,8 @@ const ProfilScreen = ({ navigation }) => {
               </Text>)}
             <View style={styles.profileContainer}>
               <Icon name="person" size={120} style={styles.profileIcon} />
-              <TouchableOpacity style={styles.cameraIcon} onPress={() => navigation.navigate('CameraScreen')}>
-                <Icon name="photo-camera" size={24} color="white" onPress={() => openImagePickerAsync('camera')} />
+              <TouchableOpacity style={styles.cameraIcon}>
+                <Icon name="photo-camera" size={24} color="white" />
               </TouchableOpacity>
             </View>
             {selectedImage && <Image source={{ uri: selectedImage }} style={{ width: 200, height: 200 }} />}

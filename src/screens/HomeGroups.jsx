@@ -94,6 +94,18 @@ const HomeGroups = ({ navigation }) => {
         <View style={styles.container}>
           {chats && chats.length > 0 && (
             chats
+              .filter(chat => chat.type === "chatRoom" && chat.chatRoomName === "Groupe La plateforme") // Filtrer les chats par type
+              .map(chat => (
+                <TouchableOpacity style={styles.chatContainer} onPress={() => handleUserPress(chat)} >
+                  <Image source={require('../images/logo_discussion.png')} style={styles.logo} />
+                  <View style={styles.groupInfo}>
+                    <Text style={styles.groupName}>{chat.chatRoomName}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))
+          )}
+          {chats && chats.length > 0 && (
+            chats
               .filter(chat => chat.type === "chatRoom" && chat.attendees.includes(user._id)) // Filtrer les chats par type
               .map(chat => (
                 <TouchableOpacity style={styles.chatContainer} onPress={() => handleUserPress(chat)} >
